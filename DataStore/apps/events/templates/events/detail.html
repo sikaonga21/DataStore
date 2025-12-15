@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - DataStore{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'project_list' %}" class="breadcrumb-item">Projects</a>
+<span class="breadcrumb-separator">/</span>
+<a href="{% url 'project_detail' event.project.pk %}" class="breadcrumb-item">{{ event.project.name }}</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">{{ event.title }}</span>
+{% endblock %}
+
+{% block content %}
+<!-- Event Header -->
+<div class="card mb-4 animate-fade-in-up">
+    <div class="card-header">
+        <div class="d-flex align-items-center gap-3">
+            <div class="stats-icon accent" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <div>
+                <h2 class="mb-0">{{ event.title }}</h2>
+                <div class="d-flex align-items-center gap-3 mt-1">
+                    <a href="{% url 'project_detail' event.project.pk %}" class="text-muted small">
+                        <i class="fas fa-folder me-1"></i>
+                        {{ event.project.name }}
+                    </a>
+                    {% if event.date %}
+                    <span class="text-muted small">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ event.date|date:"F d, Y" }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'event_update' event.pk %}" class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i>
+            Edit
+        </a>
+    </div>
+    <div class="card-body">
+        {% if event.date %}
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge badge-info">
+                <i class="fas fa-calendar-alt"></i>
+            </span>
+            <span class="fw-medium">Event Date: {{ event.date|date:"l, F d, Y" }}</span>
+        </div>
+        {% endif %}
+
+        {% if event.description %}
+        <p class="mb-0">{{ event.description }}</p>
+        {% else %}
+        <p class="text-muted mb-0">No description provided for this event.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Media Files Section -->
+<div class="page-header">
+    <div class="page-title">
+        <div class="page-title-icon"
+            style="background: linear-gradient(135deg, var(--color-success) 0%, var(--color-accent) 100%);">
+            <i class="fas fa-file-alt"></i>
+        </div>
+        <div>
+            <h3>Media Files</h3>
+            <p class="text-muted mb-0">{{ event.media_files.count }} files uploaded</p>
+        </div>
+    </div>
+    <a href="{% url 'media_upload' event.pk %}" class="btn btn-success">
+        <i class="fas fa-cloud-upload-alt"></i>
+        Upload Media
+    </a>
+</div>
+
+{% if event.media_files.all %}
+<div class="media-grid animate-fade-in-up">
+    {% for media in event.media_files.all %}
+    <a href="{{ media.file.url }}" target="_blank" class="media-item stagger-{{ forloop.counter }}">
+        <div class="media-item-icon">
+            {% with media.file.name|lower as filename %}
+            {% if '.jpg' in filename or '.jpeg' in filename or '.png' in filename or '.gif' in filename or '.webp' in
+            filename %}
+            <i class="fas fa-image"></i>
+            {% elif '.pdf' in filename %}
+            <i class="fas fa-file-pdf"></i>
+            {% elif '.doc' in filename or '.docx' in filename %}
+            <i class="fas fa-file-word"></i>
+            {% elif '.xls' in filename or '.xlsx' in filename %}
+            <i class="fas fa-file-excel"></i>
+            {% elif '.mp4' in filename or '.avi' in filename or '.mov' in filename %}
+            <i class="fas fa-file-video"></i>
+            {% elif '.mp3' in filename or '.wav' in filename %}
+            <i class="fas fa-file-audio"></i>
+            {% elif '.zip' in filename or '.rar' in filename %}
+            <i class="fas fa-file-archive"></i>
+            {% else %}
+            <i class="fas fa-file"></i>
+            {% endif %}
+            {% endwith %}
+        </div>
+        <div class="media-item-name">{{ media.file.name|truncatechars:20 }}</div>
+        <div class="media-item-date">{{ media.uploaded_at|date:"M d, Y" }}</div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card animate-fade-in-up">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3 class="empty-state-title">No media files yet</h3>
+            <p class="empty-state-text">Upload photos, documents, or other files related to this event.</p>
+            <a href="{% url 'media_upload' event.pk %}" class="btn btn-success">
+                <i class="fas fa-cloud-upload-alt"></i>
+                Upload Media
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Back Button -->
+<div class="mt-4 d-flex gap-2">
+    <a href="{% url 'project_detail' event.project.pk %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+        Back to Project
+    </a>
+</div>
+{% endblock %}

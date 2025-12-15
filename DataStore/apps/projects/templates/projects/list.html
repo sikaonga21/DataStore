@@ -1,0 +1,168 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Projects - DataStore{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'project_list' %}" class="breadcrumb-item">Projects</a>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-title">
+        <div class="page-title-icon"
+            style="background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);">
+            <i class="fas fa-folder-open"></i>
+        </div>
+        <div>
+            <h1>Projects</h1>
+            <p class="text-muted mb-0">View and manage all data collection projects</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4 animate-fade-in-up">
+    <div class="card-body">
+        <form method="GET" class="d-flex gap-3" style="flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <label class="form-label">Organization</label>
+                <select name="organization" class="form-control form-select">
+                    <option value="">All Organizations</option>
+                    {% for org in organizations %}
+                    <option value="{{ org.id }}">
+                        {{ org.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-control form-select">
+                    <option value="">All Statuses</option>
+                    
+                    <option value="ongoing" {% if current_status=='ongoing' %}selected{% endif %}>
+                        🟢 Ongoing
+                    </option>
+                    <option value="completed" {% if current_status=='completed' %}selected{% endif %}>
+                        🔵 Completed
+                    </option>
+                    <option value="planned" {% if current_status=='planned' %}selected{% endif %}>
+                        ⚪ Planned
+                    </option>
+                </select>
+            </div>
+            <div class="d-flex gap-2 align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i>
+                    Apply Filters
+                </button>
+                <a href="{% url 'project_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i>
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Projects List -->
+<div class="list-group animate-fade-in-up">
+    {% for project in projects %}
+    <a href="{% url 'project_detail' project.pk %}" class="list-group-item stagger-{{ forloop.counter }}">
+        <div class="stats-icon 
+            {% if project.status == 'ongoing' %}success
+            {% elif project.status == 'completed' %}primary
+            {% else %}secondary{% endif %}" style="width: 48px; height: 48px; font-size: 1.25rem;">
+            <i class="fas fa-folder"></i>
+        </div>
+        <div style="flex: 1;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <h5 class="mb-0">{{ project.name }}</h5>
+                <div class="d-flex gap-2">
+                    <span class="badge badge-secondary">
+                        <i class="fas fa-building me-1"></i>
+                        {{ project.organization.name }}
+                    </span>
+                    <span class="badge 
+                        {% if project.status == 'ongoing' %}badge-success
+                        {% elif project.status == 'completed' %}badge-primary
+                        {% else %}badge-secondary{% endif %}">
+                        {{ project.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <p class="text-muted mb-0 small">{{ project.description|truncatewords:25|default:"No description provided"
+                }}</p>
+            <div class="d-flex gap-4 mt-2">
+                {% if project.start_date or project.end_date %}
+                <span class="text-muted small">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    {{ project.start_date|date:"M d, Y"|default:"TBD" }} - {{ project.end_date|date:"M d,
+                    Y"|default:"Ongoing" }}
+                </span>
+                {% endif %}
+                <span class="text-muted small">
+                    <i class="fas fa-calendar-check me-1"></i>
+                    {{ project.events.count }} Events
+                </span>
+            </div>
+        </div>
+        <div class="btn btn-ghost">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </a>
+    {% empty %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-folder-open"></i>
+        </div>
+        <h3 class="empty-state-title">No projects found</h3>
+        <p class="empty-state-text">
+            {% if current_status or current_org %}
+            No projects match your current filters. Try adjusting your search criteria.
+            {% else %}
+            Create your first project by going to an organization.
+            {% endif %}
+        </p>
+        <a href="{% url 'organization_list' %}" class="btn btn-primary">
+            <i class="fas fa-building"></i>
+            View Organizations
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if projects.has_other_pages %}
+<div class="pagination animate-fade-in-up">
+    {% if projects.has_previous %}
+    <a href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}{% if current_org %}&organization={{ current_org }}{% endif %}"
+        class="btn btn-secondary btn-sm">
+        <i class="fas fa-angle-double-left"></i>
+    </a>
+    <a href="?page={{ projects.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_org %}&organization={{ current_org }}{% endif %}"
+        class="btn btn-secondary btn-sm">
+        <i class="fas fa-angle-left"></i>
+        Previous
+    </a>
+    {% endif %}
+
+    <span class="current">
+        Page {{ projects.number }} of {{ projects.paginator.num_pages }}
+    </span>
+
+    {% if projects.has_next %}
+    <a href="?page={{ projects.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_org %}&organization={{ current_org }}{% endif %}"
+        class="btn btn-secondary btn-sm">
+        Next
+        <i class="fas fa-angle-right"></i>
+    </a>
+    <a href="?page={{ projects.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_org %}&organization={{ current_org }}{% endif %}"
+        class="btn btn-secondary btn-sm">
+        <i class="fas fa-angle-double-right"></i>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

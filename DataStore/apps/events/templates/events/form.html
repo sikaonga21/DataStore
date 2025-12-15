@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if event %}Edit{% else %}New{% endif %} Event - DataStore{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'project_list' %}" class="breadcrumb-item">Projects</a>
+<span class="breadcrumb-separator">/</span>
+<a href="{% url 'project_detail' project.pk %}" class="breadcrumb-item">{{ project.name }}</a>
+<span class="breadcrumb-separator">/</span>
+{% if event %}
+<a href="{% url 'event_detail' event.pk %}" class="breadcrumb-item">{{ event.title }}</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Edit</span>
+{% else %}
+<span class="breadcrumb-item active">New Event</span>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in-up" style="max-width: 600px;">
+    <!-- Form Header -->
+    <div class="page-header">
+        <div class="page-title">
+            <div class="page-title-icon"
+                style="background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-primary) 100%);">
+                <i class="fas fa-{% if event %}edit{% else %}plus{% endif %}"></i>
+            </div>
+            <div>
+                <h1>{% if event %}Edit{% else %}Create{% endif %} Event</h1>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-folder me-1"></i>
+                    For: {{ project.name }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label" for="title">
+                        <i class="fas fa-heading me-1"></i>
+                        Event Title *
+                    </label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="Enter event title"
+                        value="{{ event.title|default:'' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description">
+                        <i class="fas fa-align-left me-1"></i>
+                        Description
+                    </label>
+                    <textarea id="description" name="description" class="form-control" rows="4"
+                        placeholder="Describe what happened during this data collection event...">{{ event.description|default:'' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="date">
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        Event Date
+                    </label>
+                    <input type="date" id="date" name="date" class="form-control"
+                        value="{{ event.date|date:'Y-m-d'|default:'' }}">
+                </div>
+
+                <hr>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if event %}Save Changes{% else %}Create Event{% endif %}
+                    </button>
+                    {% if event %}
+                    <a href="{% url 'event_detail' event.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    {% else %}
+                    <a href="{% url 'project_detail' project.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
